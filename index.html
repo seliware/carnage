@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+            text-align: center;
+            background-color: white;
+        }
+        input[type="text"], input[type="password"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 85%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #roblox-version {
+            font-size: 16px;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+            width: 100%;
+            min-height: 80px;
+            text-align: left;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="login-container">
+    <h2>Login</h2>
+    <form id="login-form">
+        <input type="text" id="username" placeholder="Username" required><br>
+        <input type="password" id="license" placeholder="License" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <p id="error-message" style="color:red; display:none;">Invalid username or license.</p>
+</div>
+
+<div class="container" id="app-container" style="display:none;">
+    <h2>Roblox Version</h2>
+    <div id="roblox-version">Fetching version...</div>
+</div>
+
+<script>
+    const validLicense = 'scrdsx-XYZ123';
+
+    if (localStorage.getItem('loggedIn') === 'true') {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+        fetchRobloxVersion();
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const license = document.getElementById('license').value;
+
+        if (license === validLicense) {
+            localStorage.setItem('loggedIn', 'true');
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            fetchRobloxVersion();
+        } else {
+            document.getElementById('error-message').style.display = 'block';
+        }
+    });
+
+    async function fetchRobloxVersion() {
+        const url = 'https://weao.xyz/api/versions/current';
+        const headers = {
+            'User-Agent': 'WEAO-3PService'
+        };
+
+        try {
+            const response = await fetch(url, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                const windowsVersion = data.Windows || 'Not Available';
+                const macVersion = data.Mac || 'Not Available';
+                
+                document.getElementById('roblox-version').innerHTML = `
+                    <p><strong>Windows Version:</strong> ${windowsVersion}</p>
+                    <p><strong>Mac Version:</strong> ${macVersion}</p>
+                `;
+            } else {
+                document.getElementById('roblox-version').textContent = 'Error fetching Roblox version.';
+            }
+        } catch (error) {
+            document.getElementById('roblox-version').textContent = 'Failed to fetch version.';
+        }
+    }
+</script>
+
+</body>
+</html>
