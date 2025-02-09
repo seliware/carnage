@@ -13,14 +13,16 @@
             height: 100vh;
             margin: 0;
             background-color: #f4f4f9;
+            position: relative;
         }
         .container {
             border: 1px solid #ccc;
             padding: 20px;
             border-radius: 5px;
-            width: 300px;
+            width: 600px;
             text-align: center;
             background-color: white;
+            display: none;
         }
         input[type="text"], input[type="password"] {
             width: 80%;
@@ -48,11 +50,48 @@
             padding: 15px;
             border-radius: 5px;
             background-color: #e0e0e0;
-            width: 100%;
+            width: 45%;
             min-height: 80px;
             text-align: left;
             overflow-y: auto;
             box-sizing: border-box;
+            display: inline-block;
+            vertical-align: top;
+        }
+        #exploits-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            width: 45%;
+            min-height: 80px;
+            text-align: left;
+            display: inline-block;
+            overflow-y: auto;
+            box-sizing: border-box;
+            vertical-align: top;
+            max-height: 400px;
+            margin-left: 20px;
+        }
+        .exploit-item {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+            box-sizing: border-box;
+        }
+        .arrow-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .arrow-button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -71,6 +110,7 @@
 <div class="container" id="app-container" style="display:none;">
     <h2>Roblox Version</h2>
     <div id="roblox-version">Fetching version...</div>
+    <div id="exploits-status">Loading exploit status...</div>
 </div>
 
 <script>
@@ -99,27 +139,71 @@
     });
 
     async function fetchRobloxVersion() {
-        const url = 'https://weao.xyz/api/versions/current';
+        const windowsMacUrl = 'https://weao.xyz/api/versions/current';
+        const androidUrl = 'https://weao.xyz/api/versions/android';
+        const headers = {
+            'User-Agent': 'WEAO-3PService'
+        };
+
+        try {
+            const response = await fetch(windowsMacUrl, { headers });
+            let windowsVersion = 'Not Available';
+            let macVersion = 'Not Available';
+
+            if (response.ok) {
+                const data = await response.json();
+                windowsVersion = data.Windows || windowsVersion;
+                macVersion = data.Mac || macVersion;
+            }
+
+            const androidResponse = await fetch(androidUrl, { headers });
+            let androidVersion = 'Not Available';
+
+            if (androidResponse.ok) {
+                const androidData = await androidResponse.json();
+                androidVersion = androidData.Android || 'Not Available';
+            }
+
+            document.getElementById('roblox-version').innerHTML = `
+                <p><strong>Windows Version:</strong> ${windowsVersion}</p>
+                <p><strong>Mac Version:</strong> ${macVersion}</p>
+                <p><strong>Android Version:</strong> ${androidVersion}</p>
+            `;
+
+            fetchExploitStatus();
+        } catch (error) {
+            document.getElementById('roblox-version').textContent = 'Failed to fetch version.';
+        }
+    }
+
+    async function fetchExploitStatus() {
+        const url = 'https://weao.xyz/api/status/exploits';
         const headers = {
             'User-Agent': 'WEAO-3PService'
         };
 
         try {
             const response = await fetch(url, { headers });
-            if (response.ok) {
-                const data = await response.json();
-                const windowsVersion = data.Windows || 'Not Available';
-                const macVersion = data.Mac || 'Not Available';
-                
-                document.getElementById('roblox-version').innerHTML = `
-                    <p><strong>Windows Version:</strong> ${windowsVersion}</p>
-                    <p><strong>Mac Version:</strong> ${macVersion}</p>
+            const exploits = await response.json();
+            let statusHTML = '';
+
+            exploits.forEach(exploit => {
+                const status = exploit.uncStatus ? 'Active' : 'Inactive';
+                statusHTML += `
+                    <div class="exploit-item">
+                        <h3>${exploit.title} (v${exploit.version})</h3>
+                        <p>Status: ${status}</p>
+                        <p>Last Updated: ${exploit.updatedDate}</p>
+                        <p>Platform: ${exploit.platform}</p>
+                        <p>Cost: ${exploit.cost}</p>
+                        <p><a href="${exploit.websitelink}" target="_blank">Website</a> | <a href="${exploit.discordlink}" target="_blank">Discord</a></p>
+                    </div>
                 `;
-            } else {
-                document.getElementById('roblox-version').textContent = 'Error fetching Roblox version.';
-            }
+            });
+
+            document.getElementById('exploits-status').innerHTML = statusHTML;
         } catch (error) {
-            document.getElementById('roblox-version').textContent = 'Failed to fetch version.';
+            document.getElementById('exploits-status').textContent = 'Failed to fetch exploit status.';
         }
     }
 </script>
