@@ -107,7 +107,7 @@
     <p id="error-message" style="color:red; display:none;">Invalid username or license.</p>
 </div>
 
-<div class="container" id="app-container" style="display:none;">
+<div class="container" id="app-container">
     <h2>Roblox Version</h2>
     <div id="roblox-version">Fetching version...</div>
     <div id="exploits-status">Loading exploit status...</div>
@@ -120,6 +120,9 @@
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('app-container').style.display = 'block';
         fetchRobloxVersion();
+    } else {
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('app-container').style.display = 'none';
     }
 
     document.getElementById('login-form').addEventListener('submit', function(event) {
@@ -164,7 +167,7 @@
                 androidVersion = androidData.Android || 'Not Available';
             }
 
-            document.getElementById('roblox-version').innerHTML = `
+            document.getElementById('roblox-version').innerHTML = ` 
                 <p><strong>Windows Version:</strong> ${windowsVersion}</p>
                 <p><strong>Mac Version:</strong> ${macVersion}</p>
                 <p><strong>Android Version:</strong> ${androidVersion}</p>
